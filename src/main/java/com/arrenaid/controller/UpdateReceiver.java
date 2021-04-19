@@ -20,7 +20,6 @@ public class UpdateReceiver {
     private final List<Handler> handlers;
     private final UserRepository userRepository;
 
-
     public UpdateReceiver(List<Handler> handlers,UserRepository userRepository) {
         this.handlers = handlers;
         this.userRepository = userRepository;

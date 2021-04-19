@@ -4,6 +4,6 @@ public enum State {
     NONE,
     START,
     ENTER_NAME,
-    ADD_NEW_COUNT,
+    CREATE,
     VIEW_COUNT,
 }
