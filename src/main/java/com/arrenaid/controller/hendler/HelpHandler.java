@@ -32,6 +32,8 @@ public class HelpHandler implements Handler{
             return help(user);
         }else if(message.equalsIgnoreCase(CREATE)) {
             return helpCreate(user);
+        }else if(message.equalsIgnoreCase(VIEW_START)) {
+            return helpView(user);
         }
         return help(user);
 //        switch (message){

@@ -23,9 +23,11 @@ import static com.arrenaid.util.BotUtil.createMessageTemplate;
 
 @Component
 public class CreateHandler implements Handler{
-    private static final String ACCEPT = "/crete_accept";
+    private static final String CREATE_ACCEPT = "/crete_accept";
     public static final String CREATE = "/create";
     private static Count countBuffer;
+    private static int scoreBuffer;
+    private static String nameBuffer;
     private static boolean isFinalStep = false;
 
     @Autowired
@@ -37,7 +39,7 @@ public class CreateHandler implements Handler{
     public List<PartialBotApiMethod<? extends Serializable>> handle(User user, String message) {
         if (message.equalsIgnoreCase(CREATE)) {
             return printEnterName(user);
-        }else if(message.equalsIgnoreCase(ACCEPT)){
+        }else if(message.equalsIgnoreCase(CREATE_ACCEPT)){
             return accept(user);
         }else if(message.equalsIgnoreCase(HELP)){
             return backToHelp(user);
@@ -69,47 +71,55 @@ public class CreateHandler implements Handler{
 
     public List<PartialBotApiMethod<? extends Serializable>> accept(User user) {
         if (!isFinalStep) {
-            // Если пользователь принял имя - меняем статус и сохраняем
             isFinalStep = true;
+            countBuffer = new Count();
+            countBuffer.setChatId(user.getChatId());
+            countBuffer.setNum(1);
+            countBuffer.setName(nameBuffer);
             SendMessage result = createMessageTemplate(user);
             result.setText(String.format("Name is saved as: %s%nEnter the start number to count",countBuffer.getName()));
             return List.of(result);
         }else{
+            isFinalStep = false;
+            countBuffer.setScore(scoreBuffer);
             countRepository.save(countBuffer);
-            user.setState(State.VIEW_COUNT);
-            userRepository.save(user);
-            SendMessage result = createMessageTemplate(user);
-            result.setText(String.format("Success", user.getUsername()));
-            return List.of(result);
+            InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+            List<InlineKeyboardButton> inlineKeyboardButtonsRowOne;
+            inlineKeyboardButtonsRowOne = List.of(createInlineKeyboardButton(" Back ", String.format("%s",VIEW_START)));
+            List<InlineKeyboardButton> inlineKeyboardButtonsRowTwo = List.of(createInlineKeyboardButton(" Crete ", String.format("%s",CREATE)));
+            inlineKeyboardMarkup.setKeyboard(List.of(inlineKeyboardButtonsRowOne,inlineKeyboardButtonsRowTwo));
+            SendMessage reply = createMessageTemplate(user);
+            reply.setText(String.format("Success", user.getUsername()));
+            reply.setReplyMarkup(inlineKeyboardMarkup);
+            return List.of(reply);
         }
     }
 
     public List<PartialBotApiMethod<? extends Serializable>> checkName(User user, String message) {
-        // При проверке имени мы превентивно сохраняем пользователю новое имя в базе
-        // идея для рефакторинга - добавить временное хранение имени
-        if(countBuffer == null) {
-            countBuffer = new Count();
-            countBuffer.setChatId(user.getChatId());
-            countBuffer.setNum(1);
-        }
-        countBuffer.setName(message);
-        // Делаем кнопку для применения изменений
+        nameBuffer = message;
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
-        List<InlineKeyboardButton> inlineKeyboardButtonsRowOne = List.of(createInlineKeyboardButton("Accept", ACCEPT));
+        List<InlineKeyboardButton> inlineKeyboardButtonsRowOne = List.of(createInlineKeyboardButton("Accept", CREATE_ACCEPT));
         inlineKeyboardMarkup.setKeyboard(List.of(inlineKeyboardButtonsRowOne));
         SendMessage result = createMessageTemplate(user);
-        result.setText(String.format("You have entered: %s%nIf this is correct - press the button%nElse enter new countname", countBuffer.getName()));
+        result.setText(String.format("You have entered: %s%nIf this is correct - press the button%nElse enter new countname", nameBuffer));
         result.setReplyMarkup(inlineKeyboardMarkup);
         return List.of(result);
     }
 
     private List<PartialBotApiMethod<? extends Serializable>> checkNumber(User user, String message) {
-        countBuffer.setScore(Integer.parseInt(message));
+        try {
+        scoreBuffer = Integer.parseInt(message);
+        } catch (Exception e){
+            e.printStackTrace();
+            SendMessage reply = createMessageTemplate(user);
+            reply.setText("Error: enter number");
+            return List.of(reply);
+        }
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
-        List<InlineKeyboardButton> inlineKeyboardButtonsRowOne = List.of(createInlineKeyboardButton("Accept", ACCEPT));
+        List<InlineKeyboardButton> inlineKeyboardButtonsRowOne = List.of(createInlineKeyboardButton("Accept", CREATE_ACCEPT));
         inlineKeyboardMarkup.setKeyboard(List.of(inlineKeyboardButtonsRowOne));
         SendMessage result = createMessageTemplate(user);
-        result.setText(String.format("You have entered: %s%nIf this is correct - press the button%nElse enter new number", String.valueOf(countBuffer.getScore())));
+        result.setText(String.format("You have entered: %s%nIf this is correct - press the button%nElse enter new number",scoreBuffer));
         result.setReplyMarkup(inlineKeyboardMarkup);
         return List.of(result);
     }
@@ -121,6 +131,6 @@ public class CreateHandler implements Handler{
 
     @Override
     public List<String> operatedCallBackQuery() {
-        return List.of(ACCEPT,CREATE);
+        return List.of(CREATE_ACCEPT,CREATE);
     }
 }

@@ -8,7 +8,6 @@ public class BotUtil {
     public static SendMessage createMessageTemplate(User user){
         return createMessageTemplate(String.valueOf(user.getChatId()));
     }
-    // Создаем шаблон SendMessage с включенным Markdown
     public static SendMessage createMessageTemplate(String chatId) {
         SendMessage message = new SendMessage();
         message.setChatId(chatId);

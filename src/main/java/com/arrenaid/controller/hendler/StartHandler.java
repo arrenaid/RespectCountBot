@@ -26,11 +26,9 @@ public class StartHandler implements Handler {
     @Override
     public List<PartialBotApiMethod<? extends Serializable>> handle(User user, String message) {
         SendMessage welcomeMessage = createMessageTemplate(user);
-        welcomeMessage.setText(String.format("Hola! I'm *%s*%nI'm here to help you count something. for example, the number of your hits to the target", botUsername));
-
+        welcomeMessage.setText(String.format("Hey! I'm *%s*%nI'm here to help you count something. for example, the number of your hits to the target", botUsername));
         SendMessage registrationMessage = createMessageTemplate(user);
         registrationMessage.setText("To start tell me your name");
-        // Меняем пользователю статус на - "ожидание ввода имени"
         user.setState(State.ENTER_NAME);
         userRepository.save(user);
         return List.of(welcomeMessage, registrationMessage);

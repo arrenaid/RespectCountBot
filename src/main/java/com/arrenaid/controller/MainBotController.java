@@ -10,7 +10,6 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 @Component
 public class MainBotController extends TelegramLongPollingBot {
@@ -37,21 +36,12 @@ public class MainBotController extends TelegramLongPollingBot {
                 }
             });
         }
-//        SendMessage message =new SendMessage();
-//        message.setText("Hi!");
-//        message.setChatId(update.getMessage().getChatId().toString());
-//        try {
-//            execute(message);
-//        } catch (TelegramApiException e) {
-//            e.printStackTrace();
-//        }
     }
 
     private void executeWithExceptionCheck(SendMessage message) {
         try{
             execute(message);
         } catch (TelegramApiException e){
-            //log.error("oops");
             e.printStackTrace();
         }
     }

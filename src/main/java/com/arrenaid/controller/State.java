@@ -6,4 +6,5 @@ public enum State {
     ENTER_NAME,
     CREATE,
     VIEW_COUNT,
+    CHANGE,
 }

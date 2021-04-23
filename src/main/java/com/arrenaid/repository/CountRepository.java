@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface CountRepository extends JpaRepository<Count,Integer> {
     List<Count> getAllByChatId(int chatId);
+    List<Count> findByNameContainingIgnoreCase(String name);
 }
